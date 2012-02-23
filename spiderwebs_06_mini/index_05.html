@@ -1,0 +1,391 @@
+
+<!doctype html>
+<html>
+	<head>
+		<title>JS1k, 1k demo submission [ID]</title>
+		<meta charset="utf-8" />
+	</head>
+	<body>
+		<canvas id="c"></canvas>
+		<script>
+			var b = document.body;
+			var c = document.getElementsByTagName('canvas')[0];
+			var a = c.getContext('2d');
+			document.body.clientWidth; // fix bug in webkit: http://qfox.nl/weblog/218
+		</script>
+		<script>
+	// start of submission //
+	c.width = 800;
+	c.height = 800;
+	with(m = Math) C = cos, S = sin, Rn = random, F = floor, Ab = abs, Rd = round, Sq = sqrt, Pi = PI;
+	//with(this)
+	
+	function P(x,y){this.x = x;this.y = y;}
+	
+	function web(){
+		// define the anchor points of the heart shape
+		var rays, rSpc, pNum, cX, cY, rBase, barPtAmt, pts, strands, TWO_PI, PI_2, webCtr, avgR;
+		
+		pNum = F(Rn()*3)+4;
+		//pNum = 4;
+		rSpc = (Rn() * 30) + 40;
+		//rSpc = 70;
+		barPtAmt = (Rn() * 10) + 15;
+		//barPtAmt = 3;
+		pts = [];
+		strands = [];
+		cX = c.width/2;
+		cY = c.height/2;
+		rBase = 200;
+		TWO_PI = Pi*2;
+		PI_2 = Pi/2;
+		
+		
+		// draw lines along the points for each letter
+		
+		drawWeb = function(){
+			strands = [];
+			rays = [];
+			// draw everything
+		        this.mkAnchPts();
+			this.makeRays();
+		};
+		
+		
+		mkAnchPts = function(){
+			var anchPts, angleDif, maxX, minX, maxY, minY, rSum, i, j, angle, r, pX, pY, p, startPt, endPt, myAngle, opAngle, sideDistX, sideDistY, lineDist, lineAngle, lnPtAmt, lnPtDist, ptX, ptY, nextP, rayP, rayPts;
+			anchPts = [];
+			angleDif = TWO_PI/pNum;
+			maxX = 0;
+			minX = c.width;
+			maxY = 0;
+			minY = c.height;
+			rSum = 0;
+			
+			p = new P(100, 100);
+
+			for (i=0; i<pNum; i+=1) {
+				angle = (i * angleDif);
+				r = rBase * (Rn() + 0.5);
+				rSum += r;
+				pX = cX + C(angle) * r;
+				pY = cY + S(angle) * r;
+				p = this.addPt(pX, pY);
+			      
+				maxX = (pX > maxX) ? pX : maxX;
+				minX = (pX < minX) ? pX : minX;
+				maxY = (pY > maxY) ? pY : maxY;
+				minY = (pY < minY) ? pY : minY;
+			    
+				anchPts.push(p);
+			}
+    
+			avgR = rSum / pNum;
+			webCtr = this.addPt(minX + (maxX - minX)/2, minY + (maxY - minY)/2);
+		      
+			// create the anchor strands from the points
+			this.anchors = [];
+			console.log(anchPts.length);
+			for (i=0; i<anchPts.length; i+=1) {
+			  startPt = anchPts[i];
+			  endPt = (i<anchPts.length-1) ? anchPts[i+1] : anchPts[0];
+			  //anchor = new A(startPt, endPt);
+				
+				// Draw edges
+				myAngle = getAngle(startPt, webCtr);
+				opAngle = PI_2 - ((myAngle < 0) ? myAngle + TWO_PI: myAngle);
+				sideDistX = (startPt.x < c.width/2) ? -startPt.x:c.width - startPt.x;
+				sideDistY = (startPt.y < c.height/2) ? -startPt.y : c.height - startPt.y;
+		
+				opRx = sideDistX/S(opAngle);
+				opRy = sideDistY/C(opAngle);
+				opR =  (Ab(opRx)<Ab(opRy)) ? opRx : opRy;
+		
+				edgeP = addPt(startPt.x +  C(myAngle) * (opR), startPt.y + S(myAngle) * (opR));
+				addS(startPt, edgeP);
+			  
+				
+				
+				// Make points
+				//var lineDist, lineAngle, lnPtAmt, lnPtDist, i, ptX, ptY, r, p, nextP, rayP;
+				lineDist = getPtDist(startPt, endPt);
+				lineAngle = getAngle(endPt, startPt);
+			
+				
+				// ensure that there are at least 2 points to go between
+				// If only 1, it will fail
+				/*pointDistFactor = 0;
+				do {
+				  lnPtAmt = F(lineDist/(rSpc - pointDistFactor));
+				  pointDistFactor += 1;
+				}
+				while (lnPtAmt<2);*/
+				
+				//pointDistFactor = 2;
+				lnPtAmt = F(lineDist/(rSpc - 2));
+				console.log(lnPtAmt);
+				lnPtDist = lineDist/lnPtAmt;
+				
+				// Now draw the lines between bezier points
+				
+				rayPts = [];
+				
+				// make points between the start and end
+				
+				for (j=0; j<lnPtAmt; j+=1)
+				{
+					ptX = startPt.x + C(lineAngle) * (j*lnPtDist);
+					ptY = startPt.y + S(lineAngle) * (j*lnPtDist);
+					addPt(ptX, ptY);
+				
+					rayP = addPt(ptX, ptY);
+					rayPts.push(rayP);
+					
+					r = new R(rays.length, rayP, webCtr);
+					rays.push(r);
+					
+					
+					
+					if(j>0){
+						p = rayPts[j];
+						nextP = rayPts[j-1];
+						addS(p, nextP);
+					}
+					/*
+					a.beginPath();
+					//a.arc(p.x, p.y, 2,0,Math.PI*2,true);
+					a.arc(rayP.x, rayP.y, 2,0,Math.PI*2,true);
+					if(j == 0) {a.strokeStyle = 'rgb(255, 0, 0)';
+					}else{a.strokeStyle = 'rgb(0, 0, 0)'};
+					a.stroke();*/	
+				}
+				// connect to the next strand's point
+				addS(p, endPt);
+				
+			}
+		};
+		
+    
+		makeRays = function() {
+			var i, j, r, rndm, p, nextStrand, nextAngle, dx, dy, pointDist, thisPoint, dist1, dist2, p1, p2, len;
+			for (i=0; i<rays.length; i+=1)
+			{
+				r = rays[i];
+			  
+				// Make the ray points
+				
+				// A thinner and less opaque line gives the sense of depth of a strand
+				strands = [];
+		   
+				// add the initail points to the points array so that they at least connect if nothing else
+				r.addRayPt(r.startPt);
+				r.addRayPt(r.nextPt);
+				
+				
+				for (j=1; j<barPtAmt; j+=1) {
+					// randomly DON'T draw a line
+					rndm = Rd(Rn()*20);
+			
+					if (rndm === 0 || rndm === 19 || rndm === 18) { continue; }
+					p = r.points[j];
+			
+					// if not the last strand
+					if (r.myOrder < rays.length-1) {
+						nextStrand = rays[r.myOrder+1];
+					}
+					else {
+						nextStrand = rays[0];
+					}
+					
+					
+					
+					nextAngle = nextStrand.myAngle;
+				
+					dx = p.x - webCtr.x;
+					dy = p.y - webCtr.y;
+				
+					// Get a random distance to place the starting point at. it will be within a range above and 
+					// below the original point. The further away from the center, the more variation it can have
+					pointDist = getRandPt(dx, dy, j * 0.2, r.strndLen);
+					thisPoint = addPt(webCtr.x + C(r.myAngle) * pointDist, webCtr.y + S(r.myAngle) * pointDist);
+					
+					pointDist = getRandPt(dx, dy, j * 0.2, nextStrand.strndLen);
+					
+					drawStrand(r, thisPoint, nextAngle, nextStrand, pointDist);
+					
+			/*
+			
+					// draw another line from the point
+					if (rndm === 2) {
+					    pointDist = getRandPt(dx, dy, j * 0.8, nextStrand.strndLen);
+					    drawStrand(r, thisPoint, nextAngle, nextStrand, pointDist);
+					}
+			  
+			  
+					// draws a much longer line from the start point (which can be from either side.)
+					else if (rndm === 3){
+						startAngle = (Rd(Rn()) === 0) ? nextAngle : this.myAngle;
+					    
+						if (startAngle === nextAngle){
+							startPt = thisPoint;
+							strandLen = nextStrand.strndLen;
+							pointDist = getRandPt(dx, dy, j*Rn()*4 + 6, strandLen);
+							drawStrand(r, startPt, startAngle, nextStrand, pointDist);
+						}else{    
+							startPt = thisPoint;
+							strandLen = nextStrand.strndLen;
+							pointDist = getRandPt(dx, dy, j*Rn()* -4 - 6, strandLen);
+							drawStrand(r, startPt, nextAngle, nextStrand, pointDist);
+						}
+					}*/
+				}
+			}
+		      
+			for (i=0; i<rays.length; i+=1)
+			{
+				r = rays[i];
+			// sort the points from closest to furthest from the web center
+			function sortDistance(a,b){
+			    dist1 = getPtDist(webCtr, a);
+			    dist2 = getPtDist(webCtr, b);
+			    return Rd(dist1 - dist2);
+			}
+			r.rayPts.sort(sortDistance);
+		   
+			// go through the points and create a strand and define the spring
+			for (j=1; j<r.rayPts.length; j+=1)
+			{
+				p1 = r.rayPts[j];
+				p2 = r.rayPts[j-1];
+				len = getPtDist(p1, p2);
+				addS(p1, p2);
+			}
+			}
+		};
+		
+		
+		addPt = function(xPos,yPos)
+		{
+			var pt, i;
+			// first check to see if a particle of the same position is already there. Return it if so.
+			for(i=0; i<pts.length; i+=2){
+			    if(pts[i].x === xPos && pts[i].y === yPos){
+				return pts[i];
+			    }
+			}
+			pt = new P(xPos, yPos);
+			pts.push(pt);
+			
+			return pt;
+		};
+		
+    
+		
+		/*******	       RAY		*******/
+	   
+	       function R(o, startPt, endPt)
+	       {
+		   var len, ptSpc, i, p;
+		   
+		   this.strndLen = undefined;						// the length of strand from the web center
+		   this.points = [];							// array of points along the ray line
+		   this.myOrder = o;						// the order of the ray around the web
+		   this.startPt = startPt;
+		   this.nextPt = endPt;
+		   this.strands = undefined;
+		   this.rayPts = [];							// list of points that will make up the ray
+		
+		   // Find the length and angle of current and next line
+		   this.myAngle = getAngle(startPt, endPt);				// the angle of the current ray
+		   len = getPtDist(startPt, endPt);
+		  
+	       
+		   // Get the length of the strand. If the strand is longer than the average strand length, then use 
+		   // that as the factor for getting the number and placement of points along the ray.
+		   // Multiplying by a fraction will keep the points away form the edges of the strands.
+		   this.strndLen = (len < avgR) ? len : avgR;
+	       
+		   ptSpc = (((this.strndLen-5) * 0.99) / barPtAmt);
+	   
+		   // find the positions of all the points that will go on the given ray
+		   for (i=0; i<barPtAmt; i+=1) {
+		       p = new P(webCtr.x + C(this.myAngle)*(i*ptSpc), webCtr.y + S(this.myAngle)*(i*ptSpc));
+		       this.points.push(p);
+		   }
+	       };
+	   
+	   
+	   
+		
+	       
+	       
+		drawStrand = function(r, pt, nextAngle, nextStrand, pointDist){
+			var nextPoint, lineLen;
+			
+			nextPoint = addPt(webCtr.x + C(nextAngle) * pointDist, webCtr.y + S(nextAngle) * pointDist);
+			// draws a normal single connector line
+			lineLen = getPtDist(pt, nextPoint);
+			if (lineLen > 0) {
+				r.addRayPt(pt);
+				nextStrand.addRayPt(nextPoint);
+				addS(pt, nextPoint);
+			}
+		};
+	       
+	       
+	   // once all the rays are defined, the ray points will be defined. Then the line and spring can be added
+	       R.prototype.addRayPt = function(p) {
+		   // check to make sure we don't add any dupe points
+		   for(var i=0; i < this.rayPts.length; i+=1){
+		       if(this.rayPts[i].x === p.x && this.rayPts[i].y === p.y){
+			   return;
+		       }
+		   }
+		   this.rayPts.push(p);
+	       };
+	       
+	       
+	       
+	       
+	       getRandPt = function(dx, dy, range, maxL)
+	       {
+		   var ptDist = Sq((dx*dx) + (dy*dy)) + Rn()*(range*2) - range;//-range, range);
+		   // make sure they are not connecting to points that don't exist
+		   ptDist = (ptDist > maxL) ? maxL : ptDist;
+		   return ptDist;
+	       };
+	       
+	   
+	       
+	       
+	       
+	       
+		getPtDist = function(pt1, pt2){
+		    var dx, dy, len;
+		    dx = (pt1.x - pt2.x);
+		    dy = (pt1.y - pt2.y);
+		    len = Sq((dx*dx) + (dy*dy));
+		    return len;
+		};
+		
+		getAngle = function(p1, p2){
+			var dx, dy;
+			dx = (p1.x - p2.x);
+			dy = (p1.y - p2.y);
+			return Math.atan2(dy, dx);
+		};
+		
+		addS = function(pt1, pt2){
+			a.strokeStyle = 'rgba(0, 0, 0, ' + ((Rn()*0.5) + 0.3) + ')'; 
+			a.beginPath();
+			a.moveTo(pt1.x, pt1.y);
+			a.lineTo(pt2.x, pt2.y);
+			a.stroke();	
+		};
+		drawWeb();
+}
+web();
+// end of submission //
+		</script>
+	</body>
+</html>
