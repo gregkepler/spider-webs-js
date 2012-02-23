@@ -1,0 +1,278 @@
+
+<!doctype html>
+<html>
+	<head>
+		<title>JS1k, 1k demo submission [ID]</title>
+		<meta charset="utf-8" />
+	</head>
+	<body>
+		<canvas id="c"></canvas>
+		<script>
+			var b = document.body;
+			var c = document.getElementsByTagName('canvas')[0];
+			var a = c.getContext('2d');
+			document.body.clientWidth; // fix bug in webkit: http://qfox.nl/weblog/218
+		</script>
+		<script>
+	// start of submission //
+	c.width = 800;
+	c.height = 800;
+	with(m = Math) C = cos, S = sin, Rn = random, F = floor, Rd = round, Sq = sqrt, Pi = PI, T = atan2;
+	//with(this)
+	
+	function P(x,y){this.x = x;this.y = y;}
+	
+	function w(){
+		// define the anchor points of the heart shape
+		var rays, rSpc= (Rn() * 30) + 30, pNum= (Rn()*3)+ 4, cX=c.width/2, cY=c.height/2, barPtAmt=(Rn() * 10) + 15, pts=[], strands=[], TWO_PI=Pi*2, webCtr;
+		
+		//pNum = 4;
+		//rSpc = 70;
+		//barPtAmt = 3;
+		
+		aPts = function(){
+			var anchPts=[], i, j, angle, r, pX, pY, p, startPt, endPt, myA, sideDistX, sideDistY, lineDist, lineAngle, lnPtAmt, lnPtDist, ptX, ptY, nextP, rayP, rPts;
+			strands = [];
+			rays = [];
+			webCtr = addPt(c.width/2, c.height/2);
+			for (i=0; i<pNum; i+=1) {
+				angle = i * (TWO_PI/pNum);
+				r = 200 * (Rn() + 0.5);
+				pX = cX + C(angle) * r;
+				pY = cY + S(angle) * r;
+				p = addPt(pX, pY);
+			      
+				anchPts.push(p);
+				
+				startPt = (i>0) ? anchPts[i-1] : anchPts[0];
+				endPt = (i<pNum-1) ? p : anchPts[0];
+				
+				// Draw edges
+				myA = getA(startPt, webCtr);
+				sideDistX = (startPt.x < c.width/2) ? -startPt.x:c.width - startPt.x;
+				sideDistY = (startPt.y < c.height/2) ? -startPt.y : c.height - startPt.y;
+		
+				edgeP = addPt(startPt.x +  C(myA) * 500, startPt.y + S(myA) * 500);
+				addS(startPt, edgeP);
+			  
+				// Make points
+				//var lineDist, lineAngle, lnPtAmt, lnPtDist, i, ptX, ptY, r, p, nextP, rayP;
+				lineDist = getPtDist(startPt, endPt);
+				lineAngle = getA(endPt, startPt);
+			
+				
+				lnPtAmt = F(lineDist/rSpc);
+				lnPtDist = lineDist/lnPtAmt;
+				
+				// Now draw the lines between bezier points
+				
+				rPts = [];
+				
+				// make points between the start and end
+				
+				for (j=0; j<lnPtAmt; j+=1)
+				{
+					ptX = startPt.x + C(lineAngle) * (j*lnPtDist);
+					ptY = startPt.y + S(lineAngle) * (j*lnPtDist);
+					addPt(ptX, ptY);
+				
+					rayP = addPt(ptX, ptY);
+					rPts.push(rayP);
+					
+					r = new R(rays.length, rayP, webCtr);
+					rays.push(r);
+					
+					if(j>0){
+						p = rPts[j];
+						nextP = rPts[j-1];
+						addS(p, nextP);
+					}
+					/*
+					a.beginPath();
+					//a.arc(p.x, p.y, 2,0,Math.PI*2,true);
+					a.arc(rayP.x, rayP.y, 2,0,Math.PI*2,true);
+					if(j == 0) {a.strokeStyle = 'rgb(255, 0, 0)';
+					}else{a.strokeStyle = 'rgb(0, 0, 0)'};
+					a.stroke();*/	
+				}
+				// connect to the next strand's point
+				addS(p, endPt);
+				//}
+			}
+		};
+		
+    
+		mkR = function() {
+			var i, j, r, rndm, p, nextStrand, nextAngle, dx, dy, pointDist, thisPoint, dist1, dist2, p1, p2, raylength=rays.length;
+			for (i=0; i<raylength; i+=1)
+			{
+				r = rays[i];
+			  
+				// Make the ray points
+				// A thinner and less opaque line gives the sense of depth of a strand
+				strands = [];
+		   
+				// add the initail points to the points array so that they at least connect if nothing else
+				
+				r.rPts.push(r.startPt);
+				r.rPts.push(r.nextPt);
+				
+				for (j=1; j<barPtAmt; j+=1) {
+					// randomly DON'T draw a line
+					rndm = Rd(Rn()*5);
+			
+					if (rndm === 1) { continue; }
+					p = r.points[j];
+			
+					// if not the last strand
+					nextStrand = (r.ord < rays.length-1) ? rays[r.ord+1] : nextStrand = rays[0];
+					
+					
+					nextAngle = nextStrand.myA;
+				
+					dx = p.x - webCtr.x;
+					dy = p.y - webCtr.y;
+				
+					// Get a random distance to place the starting point at. it will be within a range above and 
+					// below the original point. The further away from the center, the more variation it can have
+					pointDist = getRPt(dx, dy, j * 0.2, r.strndLen);
+					thisPoint = addPt(webCtr.x + C(r.myA) * pointDist, webCtr.y + S(r.myA) * pointDist);
+					
+					pointDist = getRPt(dx, dy, j * 0.2, nextStrand.strndLen);
+					
+					drwStr(r, thisPoint, nextAngle, nextStrand, pointDist);
+					
+			/*
+			
+					// draw another line from the point
+					if (rndm === 2) {
+					    pointDist = getRPt(dx, dy, j * 0.8, nextStrand.strndLen);
+					    drwStr(r, thisPoint, nextAngle, nextStrand, pointDist);
+					}
+			  
+			  
+					// draws a much longer line from the start point (which can be from either side.)
+					else if (rndm === 3){
+						startAngle = (Rd(Rn()) === 0) ? nextAngle : this.myA;
+					    
+						if (startAngle === nextAngle){
+							startPt = thisPoint;
+							strandLen = nextStrand.strndLen;
+							pointDist = getRPt(dx, dy, j*Rn()*4 + 6, strandLen);
+							drwStr(r, startPt, startAngle, nextStrand, pointDist);
+						}else{    
+							startPt = thisPoint;
+							strandLen = nextStrand.strndLen;
+							pointDist = getRPt(dx, dy, j*Rn()* -4 - 6, strandLen);
+							drwStr(r, startPt, nextAngle, nextStrand, pointDist);
+						}
+					}*/
+				}
+			}
+		      
+			for (i=0; i<raylength; i+=1)
+			{
+				r = rays[i];
+				// sort the points from closest to furthest from the web center
+				function srtD(a,b){
+				    dist1 = getPtDist(webCtr, a);
+				    dist2 = getPtDist(webCtr, b);
+				    return Rd(dist1 - dist2);
+				}
+				r.rPts.sort(srtD);
+				addS(r.rPts[0],r.rPts[r.rPts.length-1])
+			}
+		};
+		
+		
+		addPt = function(xPos,yPos)
+		{
+			var pt=new P(xPos, yPos);//, i;
+			// first check to see if a particle of the same position is already there. Return it if so.
+			/*for(i=0; i<pts.length; i+=1){
+			    if(pts[i].x === xPos && pts[i].y === yPos){
+				return pts[i];
+			    }
+			}*/
+			pts.push(pt);
+			return pt;
+		};
+		
+    
+		
+		/*******	       RAY		*******/
+	   
+	       function R(o, p1, p2)
+	       {
+			this.points = [];							// array of points along the ray line
+			this.ord = o;						// the order of the ray around the web
+			this.startPt = p1;
+			this.nextPt = p2;
+			this.rPts = [];							// list of points that will make up the ray
+		
+			// Find the length and angle of current and next line
+			this.myA = getA(p1, p2);				// the angle of the current ray
+			var len=getPtDist(p1, p2), ptSpc, i, p;  
+			
+			// Get the length of the strand. If the strand is longer than the average strand length, then use 
+			// that as the factor for getting the number and placement of points along the ray.
+			// Multiplying by a fraction will keep the points away form the edges of the strands.
+			this.strndLen = (len < 200) ? len : 200;
+	       
+			ptSpc = ((this.strndLen-5) * 0.99) / barPtAmt;
+		
+			// find the positions of all the points that will go on the given ray
+			for (i=0; i<barPtAmt; i+=1) {
+			    p = new P(webCtr.x + C(this.myA)*(i*ptSpc), webCtr.y + S(this.myA)*(i*ptSpc));
+			    this.points.push(p);
+			}
+	       };
+	   
+	   
+	   
+	       
+		drwStr = function(r, pt, nextAngle, nextStrand, pointDist){
+			var nextPoint=addPt(webCtr.x + C(nextAngle) * pointDist, webCtr.y + S(nextAngle) * pointDist);
+			// draws a normal single connector line
+			if (getPtDist(pt, nextPoint)) {
+				r.rPts.push(pt);
+				addS(pt, nextPoint);
+			}
+		};
+	       
+	       
+	       
+	       
+	       getRPt = function(dx, dy, range, maxL)
+	       {
+		   var ptDist = Sq((dx*dx) + (dy*dy)) + Rn()*(range*2) - range;//-range, range);
+		   // make sure they are not connecting to points that don't exist
+		   return (ptDist > maxL) ? maxL : ptDist;
+	       };
+	       
+	   
+	       
+		getPtDist = function(p1, p2){
+		    var dx=(p1.x - p2.x), dy=(p1.y - p2.y);
+		    return Sq((dx*dx) + (dy*dy));
+		};
+		
+		getA = function(p1, p2){
+			return T((p1.y - p2.y), (p1.x - p2.x));
+		};
+		
+		addS = function(p1, p2){
+			a.strokeStyle = 'rgba(0, 0, 0, ' + ((Rn()*0.6) + 0.25) + ')'; 
+			a.beginPath();
+			a.moveTo(p1.x, p1.y);
+			a.lineTo(p2.x, p2.y);
+			a.stroke();	
+		};
+		aPts();
+		mkR();
+}
+w();
+// end of submission //
+		</script>
+	</body>
+</html>
