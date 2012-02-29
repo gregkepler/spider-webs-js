@@ -25,7 +25,7 @@
 	
 	function w(){
 		// define the anchor points of the heart shape
-		var rays, rSpc= (Rn() * 30) + 30, pNum= (Rn()*3)+ 4, cX=c.width/2, cY=c.height/2, barPtAmt=(Rn() * 10) + 15, pts=[], strands=[], TWO_PI=Pi*2, webCtr;
+		var rays, rSpc= (Rn() * 30) + 30, pNum= (Rn()*3)+ 4, cX=c.width/2, cY=c.height/2, barPtAmt=(Rn() * 10) + 15, pts=[], TWO_PI=Pi*2, webCtr;
 		
 		//pNum = 4;
 		//rSpc = 70;
@@ -33,9 +33,11 @@
 		
 		aPts = function(){
 			var anchPts=[], i, j, angle, r, pX, pY, p, startPt, endPt, myA, sideDistX, sideDistY, lineDist, lineAngle, lnPtAmt, lnPtDist, ptX, ptY, nextP, rayP, rPts;
-			strands = [];
+			//strands = [];
 			rays = [];
 			webCtr = addPt(c.width/2, c.height/2);
+			
+			// for each point created, create an anchor point
 			for (i=0; i<pNum; i+=1) {
 				angle = i * (TWO_PI/pNum);
 				r = 200 * (Rn() + 0.5);
@@ -65,44 +67,110 @@
 				lnPtAmt = F(lineDist/rSpc);
 				lnPtDist = lineDist/lnPtAmt;
 				
-				// Now draw the lines between bezier points
 				
 				rPts = [];
 				
-				// make points between the start and end
+				// make points between the anchors, I call them rays (since they come from a center point)
 				
 				for (j=0; j<lnPtAmt; j+=1)
 				{
 					ptX = startPt.x + C(lineAngle) * (j*lnPtDist);
 					ptY = startPt.y + S(lineAngle) * (j*lnPtDist);
-					addPt(ptX, ptY);
+					//	addPt(ptX, ptY);
 				
 					rayP = addPt(ptX, ptY);
 					rPts.push(rayP);
 					
-					r = new R(rays.length, rayP, webCtr);
+					r = new R(j, rayP, webCtr);
 					rays.push(r);
 					
+					/*a.fillStyle='rgba(255, 0, 0, 1)';
+					a.beginPath();
+					a.arc(rayP.x, rayP.y, 2, 0, Math.PI*2, true);
+					a.fill();*/
+					//console.log(rays.length);
+					p = rPts[j];
+					addS(p, webCtr);
+					
+					if(rays.length>1) mkBars(rays.length-1);
+					
 					if(j>0){
-						p = rPts[j];
 						nextP = rPts[j-1];
 						addS(p, nextP);
+						r.rPts.push(p);
+						r.rPts.push(nextP);
 					}
-					/*
-					a.beginPath();
-					//a.arc(p.x, p.y, 2,0,Math.PI*2,true);
-					a.arc(rayP.x, rayP.y, 2,0,Math.PI*2,true);
-					if(j == 0) {a.strokeStyle = 'rgb(255, 0, 0)';
-					}else{a.strokeStyle = 'rgb(0, 0, 0)'};
-					a.stroke();*/	
 				}
+				
 				// connect to the next strand's point
 				addS(p, endPt);
 				
+					
 			}
+			mkBars(0);
+			//console.log(rays);
 		};
 		
-    
+		
+		
+		mkBars = function(rayNum){
+			var ray = rays[rayNum], rndm, barPt, k;
+			
+			for (k=0; k<barPtAmt; k+=1) {
+				/*if(rayNum ==0){
+					console.log(rays);
+					console.log(rays.length);
+				}*/
+				// randomly DON'T draw a line
+				rndm = Rd(Rn()*5);
+					
+				if (rndm === 1) { continue; }
+				//console.log(ray);
+				barPt = ray.points[k];
+				
+				// if not the last strand
+				
+				nextStrand = (rayNum > 0) ? rays[rayNum - 1] : rays[rays.length-1];
+				
+				nextAngle = nextStrand.myA;
+				
+				if(k>0){
+					
+					//nextStrand = (i<pNum-1 && j<lnPtAmt-1) ? rays[j-1] : rays[0];
+					
+			//		console.log(k);
+			//		console.log(nextStrand);
+					/*if(j==1){
+						a.strokeStyle = 'rgba(255, 0, 0, 1)'; 
+						a.beginPath();
+						a.moveTo(thisStrand.startPt.x, thisStrand.startPt.y);
+						a.lineTo(thisStrand.nextPt.x, thisStrand.nextPt.y);
+						a.stroke();
+					}*/			
+				
+					dx = barPt.x - webCtr.x;
+					dy = barPt.y - webCtr.y;
+				
+					// Get a random distance to place the starting point at. it will be within a range above and 
+					// below the original point. The further away from the center, the more variation it can have
+					pointDist = getRPt(dx, dy, k * 0.2, ray.strndLen);
+					thisPoint = addPt(webCtr.x + C(ray.myA) * pointDist, webCtr.y + S(ray.myA) * pointDist);
+					/*
+					a.fillStyle='rgba(255, 0, 0, 1)';
+					a.beginPath();
+					a.arc(thisPoint.x, thisPoint.y, 2, 0, Math.PI*2, true);
+					a.fill();*/	
+					
+					pointDist = getRPt(dx, dy, k * 0.2, nextStrand.strndLen);
+					
+					drwStr(ray, thisPoint, nextAngle, pointDist);
+			
+				}
+			}
+		}
+		
+		
+		/*
 		mkR = function() {
 			var i, j, r, rndm, p, nextStrand, nextAngle, dx, dy, pointDist, thisPoint, dist1, dist2, p1, p2, raylength=rays.length;
 			for (i=0; i<raylength; i+=1)
@@ -141,33 +209,9 @@
 					
 					pointDist = getRPt(dx, dy, j * 0.2, nextStrand.strndLen);
 					
-					drwStr(r, thisPoint, nextAngle, nextStrand, pointDist);
+					drwStr(r, thisPoint, nextAngle, pointDist);
 					
-			/*
 			
-					// draw another line from the point
-					if (rndm === 2) {
-					    pointDist = getRPt(dx, dy, j * 0.8, nextStrand.strndLen);
-					    drwStr(r, thisPoint, nextAngle, nextStrand, pointDist);
-					}
-			  
-			  
-					// draws a much longer line from the start point (which can be from either side.)
-					else if (rndm === 3){
-						startAngle = (Rd(Rn()) === 0) ? nextAngle : this.myA;
-					    
-						if (startAngle === nextAngle){
-							startPt = thisPoint;
-							strandLen = nextStrand.strndLen;
-							pointDist = getRPt(dx, dy, j*Rn()*4 + 6, strandLen);
-							drwStr(r, startPt, startAngle, nextStrand, pointDist);
-						}else{    
-							startPt = thisPoint;
-							strandLen = nextStrand.strndLen;
-							pointDist = getRPt(dx, dy, j*Rn()* -4 - 6, strandLen);
-							drwStr(r, startPt, nextAngle, nextStrand, pointDist);
-						}
-					}*/
 				}
 			}
 		      
@@ -183,7 +227,7 @@
 				r.rPts.sort(srtD);
 				addS(r.rPts[0],r.rPts[r.rPts.length-1])
 			}
-		};
+		};*/
 		
 		
 		addPt = function(xPos,yPos)
@@ -232,7 +276,7 @@
 	   
 	   
 	       
-		drwStr = function(r, pt, nextAngle, nextStrand, pointDist){
+		drwStr = function(r, pt, nextAngle, pointDist){
 			var nextPoint=addPt(webCtr.x + C(nextAngle) * pointDist, webCtr.y + S(nextAngle) * pointDist);
 			// draws a normal single connector line
 			if (getPtDist(pt, nextPoint)) {
@@ -270,7 +314,7 @@
 			a.stroke();	
 		};
 		aPts();
-		mkR();
+		//mkR();
 }
 w();
 // end of submission //
