@@ -25,7 +25,7 @@
 	
 	function w(){
 		// define the anchor points of the heart shape
-		var rays, mkBars, getPtDist, getA, drwStr, getRPt, addS, aPts, rSpc= (Math.random() * 30) + 30, pNum= (Math.random()*3)+ 4, cX=c.width/2, cY=c.height/2, barPtAmt=(Math.random() * 10) + 15, TWO_PI=Math.PI*2, webCtr;
+		var rays, mkBars, getPtDist, getA, getRPt, addS, aPts, rSpc= (Math.random() * 30) + 30, pNum= (Math.random()*3)+ 4, cX=c.width/2, cY=c.height/2, barPtAmt=(Math.random() * 10) + 15, TWO_PI=Math.PI*2, webCtr;
 		
 		
 		
@@ -33,8 +33,7 @@
 	   
 	       function R(p1, p2)
 	       {
-			this.pts = [];							// array of points along the ray line
-			this.rPts = [];							// list of points that will make up the ray
+			//this.rPts = [];							// list of points that will make up the ray
 			this.p1 = p1;
 			
 			// Find the length and angle of current and next line
@@ -50,16 +49,7 @@
 	   
 	   
 	       
-		drwStr = function(r, pt, nextAngle, pointDist){
-			var nextPoint=new P(webCtr.x + Math.cos(nextAngle) * pointDist, webCtr.y + Math.sin(nextAngle) * pointDist);
-			// draws a normal single connector line
-			if (getPtDist(pt, nextPoint)) {
-				r.rPts.push(pt);
-				addS(pt, nextPoint);
-			}
-		};
-	       
-	       
+		
 	       
 	       
 	       getRPt = function(dx, dy, range, maxL)
@@ -161,8 +151,8 @@
 						
 						nextP = rPts[j-1];
 						addS(rayP, nextP);
-						r.rPts.push(p);
-						r.rPts.push(nextP);
+						//r.rPts.push(p);
+						//r.rPts.push(nextP);
 					}
 				}
 				
@@ -177,21 +167,16 @@
 		
 		
 		mkBars = function(rayNum){
-			var ray = rays[rayNum], rndm, barPt, k, nextAngle, nextStrand, thisPoint, pointDist, dx, dy;
+			var ray = rays[rayNum], rndm, barPt, k, nextAngle, nextStrand, thisPoint, pointDist, dx, dy, nextPoint;
 			
-			
-	       
-				ptSpc = ((ray.sLen-5) * 0.99) / barPtAmt;
+			ptSpc = ((ray.sLen-5) * 0.99) / barPtAmt;
 			
 			for (k=0; k<Number(barPtAmt); k++) {
 				// randomly DON'T draw a line
 				rndm = Math.round(Math.random()*5);
 					
 				if (rndm === 1) { continue; }
-				//barPt = ray.pts[k];
 				
-				
-		
 				// find the positions of all the pts that will go on the given ray
 			
 				barPt = new P(webCtr.x + Math.cos(ray.myA)*(k*ptSpc), webCtr.y + Math.sin(ray.myA)*(k*ptSpc));
@@ -219,18 +204,16 @@
 					
 					pointDist = getRPt(dx, dy, k * 0.2, nextStrand.sLen);
 					
-					drwStr(ray, thisPoint, nextAngle, pointDist);
+					
+					nextPoint=new P(webCtr.x + Math.cos(nextAngle) * pointDist, webCtr.y + Math.sin(nextAngle) * pointDist);
+					addS(thisPoint, nextPoint);
 			
 				}
 			}
 		};
 		
 		
-		
-		
-		
 		aPts();
-		//mkR();
 	}
 w();
 // end of submission //
