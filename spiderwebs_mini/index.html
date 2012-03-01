@@ -18,66 +18,52 @@
 	// start of submission //
 	c.width = 800;
 	c.height = 800;
-	//with(m = Math) C = cos, S = sin, Rn = random, F = floor, Rd = round, Sq = sqrt, Pi = PI, T = atan2;
-	//with(this)
 	
 	function P(x,y){this.x = x;this.y = y;}
 	
 	function w(){
 		// define the anchor points of the heart shape
-		var rays, mkBars, getPtDist, getA, getRPt, addS, aPts, rSpc= (Math.random() * 30) + 30, pNum= (Math.random()*3)+ 4, cX=c.width/2, cY=c.height/2, barPtAmt=(Math.random() * 10) + 15, TWO_PI=Math.PI*2, webCtr;
-		
-		
+		var M=Math, Rn=M.random, C=M.cos, S=M.sin, Sq=M.sqrt, rays, mkBars, getPtDist, getA, addS, rSpc= 45, pNum= Rn()*3 + 4, cX=400, cY=400, barPtAmt=Rn() * 10 + 15, TWO_PI=M.PI*2, webCtr, raysLength;
+		// cX and cY 400 is half the height and width
 		
 		/*******	       RAY		*******/
 	   
 	       function R(p1, p2)
 	       {
 			//this.rPts = [];							// list of points that will make up the ray
-			this.p1 = p1;
+			//this.p1 = p1;
 			
 			// Find the length and angle of current and next line
-			this.myA = getA(p1, p2);				// the angle of the current ray
-			var len=getPtDist(p1, p2);  
+			this.a = getA(p1, p2);				// the angle of the current ray
+			//var len=getPtDist(p1, p2);  
 			
 			// Get the length of the strand. If the strand is longer than the average strand length, then use 
 			// that as the factor for getting the number and placement of points along the ray.
 			// Multiplying by a fraction will keep the points away from the edges of the strands.
-			this.sLen = (len < 200) ? len : 200;
+			this.l = (getPtDist(p1, p2) < 200) ? getPtDist(p1, p2) : 200;
 	       }
 	   
 	   
 	   
 	       
-		
-	       
-	       
-	       getRPt = function(dx, dy, range, maxL)
-	       {
-		   var ptDist = Math.sqrt((dx*dx) + (dy*dy)) + Math.random()*(range*2) - range;//-range, range);
-		   // make sure they are not connecting to points that don't exist
-		   return (ptDist > maxL) ? maxL : ptDist;
-	       };
-	       
-	   
-	       
-		getPtDist = function(p1, p2){
-			
+		getPtDist = function(p1, p2)
+		{	
 		    var dx=(p1.x - p2.x), dy=(p1.y - p2.y);
-		    return Math.sqrt((dx*dx) + (dy*dy));
+		    return Sq((dx*dx) + (dy*dy));
 		};
 		
 		getA = function(p1, p2){
-			return Math.atan2((p1.y - p2.y), (p1.x - p2.x));
+			return M.atan2((p1.y - p2.y), (p1.x - p2.x));
 		};
 		
 		addS = function(p1, p2){
 			
-			a.strokeStyle = 'rgba(0, 0, 0, ' + ((Math.random()*0.6) + 0.25) + ')'; 
+			//a.strokeStyle = '0';
+			a.lineWidth = Rn()*.6 + .2;
 			a.beginPath();
 			a.moveTo(p1.x, p1.y);
 			a.lineTo(p2.x, p2.y);
-			a.stroke();	
+			a.stroke();
 		};
 		
 		
@@ -85,21 +71,19 @@
 		//rSpc = 70;
 		//barPtAmt = 3;
 		
-		aPts = function(){
+		go = function(){
 			
-			var anchPts=[], i, j, angle, r, pX, pY, p, startPt, endPt, myA, lineDist, lineAngle, lnPtAmt, lnPtDist, ptX, ptY, nextP, rayP, rPts, edgeP;
+			var anchPts=[], i, j, angle, r, p, startPt, endPt, myA, lineDist, lineAngle, lnPtAmt, lnPtDist, ptX, ptY, rayP, prevP, edgeP;
 			//strands = [];
 			rays = [];
-			webCtr = new P(400, 400);
+			webCtr = new P(cX, cY);
 			
 			// for each point created, create an anchor point
 			for (i=0; i<pNum; i++) {
 				
 				angle = i * (TWO_PI/pNum);
-				r = 200 * (Math.random() + 0.5);
-				pX = cX + Math.cos(angle) * r;
-				pY = cY + Math.sin(angle) * r;
-				p = new P(pX, pY);
+				r = 200 * (Rn() + .6);
+				p = new P(cX + C(angle) * r, cY + S(angle) * r);
 
 			      
 				anchPts.push(p);
@@ -107,53 +91,48 @@
 				startPt = (i>0) ? anchPts[i-1] : anchPts[0];
 				endPt = (i<pNum-1) ? p : anchPts[0];
 				
-				// Draw edges
+				
+				// draw to the edge of the screen (changed to a constant of 500)
 				myA = getA(startPt, webCtr);
-		
-				edgeP = new P(startPt.x +  Math.cos(myA) * 500, startPt.y + Math.sin(myA) * 500);
+				edgeP = new P(startPt.x +  C(myA) * 500, startPt.y + S(myA) * 500);
 				addS(startPt, edgeP);
 			  
-				// Make points
-				//var lineDist, lineAngle, lnPtAmt, lnPtDist, i, ptX, ptY, r, p, nextP, rayP;
+				// Create points between anchor points
 				lineDist = getPtDist(startPt, endPt);
 				lineAngle = getA(endPt, startPt);
 			
-				
-				lnPtAmt = Math.floor(lineDist/rSpc);
+				lnPtAmt = ~~(lineDist/rSpc);				// ~~ == Math.floor
 				lnPtDist = lineDist/lnPtAmt;
 				
 				
-				rPts = [];
-				
 				// make points between the anchors, I call them rays (since they come from a center point)
-				
 				for (j=0; j<lnPtAmt; j++)
 				{
 					
-					ptX = startPt.x + Math.cos(lineAngle) * (j*lnPtDist);
-					ptY = startPt.y + Math.sin(lineAngle) * (j*lnPtDist);
+					ptX = startPt.x + C(lineAngle) * (j*lnPtDist);
+					ptY = startPt.y + S(lineAngle) * (j*lnPtDist);
 					//	new P(ptX, ptY);
 				
 					rayP = new P(ptX, ptY);
-					rPts.push(rayP);
 					
 					r = new R(rayP, webCtr);
 					rays.push(r);
-
-					p = rPts[j];
+					p = rayP;
+					
+					// draw the line between the ray and the center
 					addS(p, webCtr);
 					
-					if(rays.length>1) {
-						mkBars(rays.length-1);
+					// make the bars along the rays for all but the first ray
+					raysLength = rays.length;
+					if(raysLength>0) {
+						mkBars(raysLength-1);
 					}
 
 					if(j>0){
 						
-						nextP = rPts[j-1];
-						addS(rayP, nextP);
-						//r.rPts.push(p);
-						//r.rPts.push(nextP);
+						addS(rayP, prevP);
 					}
+					prevP = rayP;
 				}
 				
 				// connect to the next strand's point
@@ -167,53 +146,44 @@
 		
 		
 		mkBars = function(rayNum){
-			var ray = rays[rayNum], rndm, barPt, k, nextAngle, nextStrand, thisPoint, pointDist, dx, dy, nextPoint;
+			var ray = rays[rayNum], barPt, k, nextStrand, thisPoint, pointDist, nextPoint, ptSpc, adjustedPointDist;
 			
-			ptSpc = ((ray.sLen-5) * 0.99) / barPtAmt;
-			
-			for (k=0; k<Number(barPtAmt); k++) {
+			ptSpc = ((ray.l-5) * .99) / barPtAmt;
+			//k=barPtAmt;while(k--){
+			for (k=0; k<barPtAmt; k++) {
+				
 				// randomly DON'T draw a line
-				rndm = Math.round(Math.random()*5);
-					
-				if (rndm === 1) { continue; }
+				if (Rn()*5 === 1) { continue; }
 				
 				// find the positions of all the pts that will go on the given ray
-			
-				barPt = new P(webCtr.x + Math.cos(ray.myA)*(k*ptSpc), webCtr.y + Math.sin(ray.myA)*(k*ptSpc));
-				/*console.log(barPt);
+				barPt = new P(webCtr.x + C(ray.a)*(k*ptSpc), webCtr.y + S(ray.a)*(k*ptSpc));
 				
-				a.beginPath();
-				a.arc(barPt.x, barPt.y, 2, 0, TWO_PI);
-				a.fillStyle = "#ff0000";
-				a.fill();*/
 				
 				// if not the last strand
 				
-				nextStrand = (rayNum > 0) ? rays[rayNum - 1] : rays[rays.length-1];
+				nextStrand = (rayNum) ? rays[rayNum - 1] : rays[raysLength-1];
 				
-				nextAngle = nextStrand.myA;
 				
-				if(k>0){
+				
+				if(k){
 					
-					dx=(barPt.x - webCtr.x), dy=(barPt.y - webCtr.y);
+					//dx=(barPt.x - webCtr.x); dy=(barPt.y - webCtr.y);
 					// Get a random distance to place the starting point at. it will be within a range above and 
 					// below the original point. The further away from the center, the more variation it can have
-					pointDist = getRPt(dx, dy, k * 0.2, ray.sLen);
-					thisPoint = new P(webCtr.x + Math.cos(ray.myA) * pointDist, webCtr.y + Math.sin(ray.myA) * pointDist);
 					
+					pointDist = getPtDist(barPt, webCtr) + Rn()*(k * .2*2) - k * .2;
+					adjustedPointDist = (pointDist > ray.l) ? ray.l : pointDist;
 					
-					pointDist = getRPt(dx, dy, k * 0.2, nextStrand.sLen);
+					thisPoint = new P(webCtr.x + C(ray.a) * adjustedPointDist, webCtr.y + S(ray.a) * adjustedPointDist);
+					adjustedPointDist = (pointDist > nextStrand.l) ? nextStrand.l : pointDist;
 					
-					
-					nextPoint=new P(webCtr.x + Math.cos(nextAngle) * pointDist, webCtr.y + Math.sin(nextAngle) * pointDist);
+					nextPoint=new P(webCtr.x + C(nextStrand.a) * adjustedPointDist, webCtr.y + S(nextStrand.a) * adjustedPointDist);
 					addS(thisPoint, nextPoint);
-			
 				}
 			}
 		};
 		
-		
-		aPts();
+		go();
 	}
 w();
 // end of submission //
