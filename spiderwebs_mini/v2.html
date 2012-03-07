@@ -31,28 +31,27 @@
             /*******	       RAY		*******/
             
             function R(p1, p2)
-	       {
-			// Find the length and angle of current and next line
-			this.a = getA(p1, p2);				// the angle of the current ray
+	    {
+                // Find the length and angle of current and next line
+                this.a = getA(p1, p2);				// the angle of the current ray
 			
-			// Get the length of the strand. If the strand is longer than the average strand length, then use 
-			// that as the factor for getting the number and placement of points along the ray.
-			// Multiplying by a fraction will keep the points away from the edges of the strands.
-			//this.l = (getPtDist(p1, p2) < 200) ? getPtDist(p1, p2) : 200;
-                    this.l = getPtDist(p1, p2);
-                    addS(p1, p2);
-	       }
+                // Get the length of the strand. If the strand is longer than the average strand length, then use 
+		// that as the factor for getting the number and placement of points along the ray.
+                // Multiplying by a fraction will keep the points away from the edges of the strands
+                this.l = getPtDist(p1, p2);
+                addS(p1, p2);
+	    }
                
                
-               getPtDist = function(p1, p2)
-		{	
-		    var dx=(p1.x - p2.x), dy=(p1.y - p2.y);
-		    return Sq((dx*dx) + (dy*dy));
-		};
+            getPtDist = function(p1, p2)
+	    {	
+		var dx=(p1.x - p2.x), dy=(p1.y - p2.y);
+		return Sq((dx*dx) + (dy*dy));
+	    };
 		
-		getA = function(p1, p2){
-			return M.atan2((p1.y - p2.y), (p1.x - p2.x));
-		};
+	    getA = function(p1, p2){
+                return M.atan2((p1.y - p2.y), (p1.x - p2.x));
+            };
             
             
             addS = function(p1, p2){
@@ -78,7 +77,7 @@
                 
                
                 for (i=0; i<119; i+=incrementer) {
-                //for (i=0; i<61; i+=4) {
+                    //for (i=0; i<61; i+=4) {
                     j = i%max;
                     
                     if (i >= 61) {
@@ -91,19 +90,8 @@
                         //x = -(startPt.x + s * (-Pw(j, 2) + 40*j + num)*S((PI*j)/halfCirc))+w;
                         //y = startPt.y - s * (-Pw(j, 2) + 40*j + num)*C((PI*j)/halfCirc);
                     }
-                    /*
-                    
-                    other_j = max-j;
-                    //power_j = s * (-Pw(j, 2) + 40*j + num);
-                    
-                    //power_j_2 = s * (-Pw(other_j, 2) + 40*other_j + num)
-                    
-                        x = (i >= max) ? startPt.x + s * (-Pw(j, 2) + 40*j + num) * S((PI*j)/halfCirc) : -(startPt.x + s * (-Pw(other_j, 2) + 40*other_j + num)*S((PI*other_j)/halfCirc))+w;
-                        y = (i >= max) ? startPt.y - s * (-Pw(j, 2) + 40*j + num) * C((PI*j)/halfCirc) : startPt.y - s * (-Pw(other_j, 2) + 40*other_j + num)*C((PI*other_j)/halfCirc)
-                    */
-
-                    
-                    //p = new P(x, y);
+                   
+                   
                     pts.push(p);
                    
                     myA = getA(p, webCtr);
@@ -112,9 +100,6 @@
                         // draw line to the edge
                         addS(p, new P(webCtr.x +  (C(myA) * w), webCtr.y + (S(myA) * w)));
                     }else {
-                        // draw line to center
-                        //addS(p, webCtr);
-                        
                         rays.push(new R(p, webCtr));
                         ray_length = rays.length;
                         if (ray_length>1)drawBars(ray_length-2);
@@ -123,10 +108,7 @@
                 incrementer =  M.round(Rn() * 4 + 1);
                 
                 pts_length = pts.length;
-                if (i>0) {
-                    //prev = pts[pts.length-2];
-                    addS(p, pts[pts_length-2]);
-               }
+                if (i>0) addS(p, pts[pts_length-2]);
             }
             addS(pts[pts_length-1], pts[0]);
             drawBars(0);
@@ -151,18 +133,15 @@
             //ptSpc = ((ray.l-5) * .99) / barPtAmt;
         
             for (k=1; k<barPtAmt; k++) {
-              // randomly DON'T draw a line
-              if (Rn()*5 == 1) { 
-                continue;
-              }
+                // randomly DON'T draw a line
+                if (Rn()*5 == 1) continue;
                 
                 ptSpc = (((ray.l-5) * .99) / barPtAmt) * k;
-              // find the positions of all the pts that will go on the given ray
-              barPt = new P(webCtr.x + C(ray.a)*ptSpc, webCtr.y + S(ray.a)*ptSpc);
+                // find the positions of all the pts that will go on the given ray
+                barPt = new P(webCtr.x + C(ray.a)*ptSpc, webCtr.y + S(ray.a)*ptSpc);
              
-          
-              // if not the last strand
-              nextStrand = (rayNum != 0) ? rays[rayNum - 1] : rays[ray_length-1];
+                // if not the last strand
+                nextStrand = (rayNum != 0) ? rays[rayNum - 1] : rays[ray_length-1];
                
                 // Get a random distance to place the starting point at. it will be within a range above and 
                 // below the original point. The further away from the center, the more variation it can have
