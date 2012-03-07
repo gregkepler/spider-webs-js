@@ -1,0 +1,187 @@
+<!doctype html>
+<html>
+	<head>
+		<title>JS1k, 1k demo submission [ID]</title>
+		<meta charset="utf-8" />
+	</head>
+	<body>
+		<canvas id="c"></canvas>
+		<script>
+			var b = document.body;
+			var c = document.getElementsByTagName('canvas')[0];
+			var a = c.getContext('2d');
+			document.body.clientWidth; // fix bug in webkit: http://qfox.nl/weblog/218
+		</script>
+		
+		<script>
+	// start of submission //
+	c.width = 600;
+	c.height = 600;
+        
+        function P(x,y){this.x = x;this.y = y;}
+        
+        
+        
+        
+        function w(){
+            var M=Math, Rn=M.random, C=M.cos, S=M.sin, Sq=M.sqrt, Pw=M.pow, PI=M.PI, H=300, startPt = new P(H, 450), pts, rays, ray_length, barPtAmt=Rn() * 10 + 15, webCtr=new P(H, H), drawBars, getPtDist, addS, go, w=600, num=1200, halfCirc = 180, getA;
+            
+            
+            
+            /*******	       RAY		*******/
+            
+            function R(p1, p2)
+	       {
+			// Find the length and angle of current and next line
+			this.a = getA(p1, p2);				// the angle of the current ray
+			
+			// Get the length of the strand. If the strand is longer than the average strand length, then use 
+			// that as the factor for getting the number and placement of points along the ray.
+			// Multiplying by a fraction will keep the points away from the edges of the strands.
+			//this.l = (getPtDist(p1, p2) < 200) ? getPtDist(p1, p2) : 200;
+                    this.l = getPtDist(p1, p2);
+                    addS(p1, p2);
+	       }
+               
+               
+               getPtDist = function(p1, p2)
+		{	
+		    var dx=(p1.x - p2.x), dy=(p1.y - p2.y);
+		    return Sq((dx*dx) + (dy*dy));
+		};
+		
+		getA = function(p1, p2){
+			return M.atan2((p1.y - p2.y), (p1.x - p2.x));
+		};
+            
+            
+            addS = function(p1, p2){
+                /*color redColor = color(random(50, 255), 0, 0);
+                //color w = color(2);
+                stroke(redColor);*/
+        
+                //a.strokeStyle = '0';
+		a.lineWidth = Rn()*.6 + .2;
+		a.beginPath();
+		a.moveTo(p1.x, p1.y);
+		a.lineTo(p2.x, p2.y);
+		a.stroke();
+	    };
+            
+            
+            
+            go = function(){
+                var p, incrementer=1, s=Rn()*.1 + .2, i, j, myA, max=61, pts_length;
+                pts = [];
+                rays = [];
+               
+                
+               
+                for (i=0; i<119; i+=incrementer) {
+                //for (i=0; i<61; i+=4) {
+                    j = i%max;
+                    
+                    if (i >= 61) {
+                        p = new P(startPt.x + s * (-Pw(j, 2) + 40*j + num)*S((PI*j)/halfCirc), startPt.y - s * (-Pw(j, 2) + 40*j + num)*C((PI*j)/halfCirc));
+                        //x = startPt.x + s * (-Pw(j, 2) + 40*j + num)*S((PI*j)/halfCirc);
+                        //y = startPt.y - s * (-Pw(j, 2) + 40*j + num)*C((PI*j)/halfCirc);
+                    }else {
+                        j = 61-j;
+                        p = new P(-(startPt.x + s * (-Pw(j, 2) + 40*j + num)*S((PI*j)/halfCirc))+w, startPt.y - s * (-Pw(j, 2) + 40*j + num)*C((PI*j)/halfCirc));
+                        //x = -(startPt.x + s * (-Pw(j, 2) + 40*j + num)*S((PI*j)/halfCirc))+w;
+                        //y = startPt.y - s * (-Pw(j, 2) + 40*j + num)*C((PI*j)/halfCirc);
+                    }
+                    /*
+                    
+                    other_j = max-j;
+                    //power_j = s * (-Pw(j, 2) + 40*j + num);
+                    
+                    //power_j_2 = s * (-Pw(other_j, 2) + 40*other_j + num)
+                    
+                        x = (i >= max) ? startPt.x + s * (-Pw(j, 2) + 40*j + num) * S((PI*j)/halfCirc) : -(startPt.x + s * (-Pw(other_j, 2) + 40*other_j + num)*S((PI*other_j)/halfCirc))+w;
+                        y = (i >= max) ? startPt.y - s * (-Pw(j, 2) + 40*j + num) * C((PI*j)/halfCirc) : startPt.y - s * (-Pw(other_j, 2) + 40*other_j + num)*C((PI*other_j)/halfCirc)
+                    */
+
+                    
+                    //p = new P(x, y);
+                    pts.push(p);
+                   
+                    myA = getA(p, webCtr);
+                    
+                    if (i%6 ==0) {
+                        // draw line to the edge
+                        addS(p, new P(webCtr.x +  (C(myA) * w), webCtr.y + (S(myA) * w)));
+                    }else {
+                        // draw line to center
+                        //addS(p, webCtr);
+                        
+                        rays.push(new R(p, webCtr));
+                        ray_length = rays.length;
+                        if (ray_length>1)drawBars(ray_length-2);
+                    }
+                
+                incrementer =  M.round(Rn() * 4 + 1);
+                
+                pts_length = pts.length;
+                if (i>0) {
+                    //prev = pts[pts.length-2];
+                    addS(p, pts[pts_length-2]);
+               }
+            }
+            addS(pts[pts_length-1], pts[0]);
+            drawBars(0);
+            drawBars(ray_length-1);
+      }
+
+
+
+        /*
+        void mouseClicked() {
+          drawWeb();
+        }
+        */
+        
+      
+        
+        
+        drawBars = function(rayNum) {
+            
+            var ray, barPt, pointDist, thisPoint, nextStrand, ptSpc, k;
+            ray = rays[rayNum];
+            //ptSpc = ((ray.l-5) * .99) / barPtAmt;
+        
+            for (k=1; k<barPtAmt; k++) {
+              // randomly DON'T draw a line
+              if (Rn()*5 == 1) { 
+                continue;
+              }
+                
+                ptSpc = (((ray.l-5) * .99) / barPtAmt) * k;
+              // find the positions of all the pts that will go on the given ray
+              barPt = new P(webCtr.x + C(ray.a)*ptSpc, webCtr.y + S(ray.a)*ptSpc);
+             
+          
+              // if not the last strand
+              nextStrand = (rayNum != 0) ? rays[rayNum - 1] : rays[ray_length-1];
+               
+                // Get a random distance to place the starting point at. it will be within a range above and 
+                // below the original point. The further away from the center, the more variation it can have
+                pointDist = getPtDist(barPt, webCtr) + Rn()*(k * .2*2) - k * .2;
+                thisPoint = new P(webCtr.x + C(ray.a) * pointDist, webCtr.y + S(ray.a) * pointDist);
+                
+                pointDist = (pointDist > nextStrand.l) ? nextStrand.l : pointDist;
+                addS(thisPoint, new P(webCtr.x + C(nextStrand.a) * pointDist, webCtr.y + S(nextStrand.a) * pointDist));
+            }
+        }  
+        go();
+    }
+    
+    
+    w();
+
+
+
+// end of submission //
+		</script>
+	</body>
+</html>
