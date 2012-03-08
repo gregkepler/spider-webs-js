@@ -15,16 +15,15 @@
 		
 		<script>
 	// start of submission //
-	c.width = 600;
-	c.height = 600;
+	c.width = 800;
+	c.height = 800;
         
         function P(x,y){this.x = x;this.y = y;}
         
         
-        
-        
-        function w(){
-            var M=Math, Rn=M.random, C=M.cos, S=M.sin, Sq=M.sqrt, Pw=M.pow, PI=M.PI, H=300, barPtAmt=Rn() * 10 + 15, webCtr=new P(H, H), w=600, num=1200, halfCirc = 180;
+        function w()
+        {
+            var M=Math, N=M.random, C=M.cos, S=M.sin, Pw=M.pow, H=400, barPtAmt=N() * 10 + 15, webCtr=new P(H, H), w=800, num=1200, halfCirc = 180;
             // e = rays array
             // u = ray_length
             
@@ -33,24 +32,24 @@
             
             function R(p1, p2)
 	    {
-                // Find the length and angle of current and next line
-                this.a = A(p1, p2);				// the angle of the current ray
+                // the angle of the current ray
+                this.a = A(p1, p2);				
 			
-                // Get the length of the strand. If the strand is longer than the average strand length, then use 
-		// that as the factor for getting the number and placement of points along the ray.
-                // Multiplying by a fraction will keep the points away from the edges of the strands
+                // Get the length of the strand
                 this.l = G(p1, p2);
                 L(p1, p2);
 	    }
+            /*** End Ray ***/
                
             
             // get the distance between 2 points
             G = function(p1, p2)
 	    {	
 		var dx=(p1.x - p2.x), dy=(p1.y - p2.y);
-		return Sq((dx*dx) + (dy*dy));
+		return M.sqrt((dx*dx) + (dy*dy));
 	    };
 	    
+            
             // get angle between 2 points
 	    A = function(p1, p2){
                 return M.atan2((p1.y - p2.y), (p1.x - p2.x));
@@ -64,7 +63,7 @@
                 stroke(redColor);*/
         
                 //a.strokeStyle = '0';
-		a.lineWidth = Rn()*.6 + .2;
+		a.lineWidth = N()*.6 + .2;
 		a.beginPath();
 		a.moveTo(p1.x, p1.y);
 		a.lineTo(p2.x, p2.y);
@@ -74,57 +73,55 @@
             
             
             g = function(){
-                //var p, incrementer=1, s=Rn()*.1 + .2, i, j, myA, max=61, pts_length;
-                var incrementer=1, s=Rn()*.1 + .2, max=61, f;
+                var incrementer=1, s=N()*.1 + .2;
                 z = [];
                 e = [];
                
-                
                 f = function (j,u,k) {
                         o = s * (-Pw(j, 2) + 40*j + num);
-                        q = (PI*j)/halfCirc;
-                        p = new P(k*(300 + o *S(q))+u, 450 - o *C(q));
+                        q = (M.PI*j)/halfCirc;
+                        p = new P(k*(H + o *S(q))+u, 600 - o *C(q));
                 }
+                
+                // go through 60-ish degrees twice. Once for each side of the heart shape.
                 for (i=0; i<119; i+=incrementer) {
-                    //for (i=0; i<61; i+=4) {
-                    j = i%max;
-                    //w = -Pw(j, 2);
+                    j = i%61;
                     
-                    if (i >= max) {
+                    // right side
+                    if (i >= 61) {
                         f(j,0,1);
                     }else {
-                        f(max-j,w,-1);
+                        f(61-j,w,-1);
                     }
                    
-                   
+                    // add the point to pts array
                     z.push(p);
                    
                     m = A(p, webCtr);
                     
-                    if (i%6 ==0) {
-                        // draw line to the edge
-                        L(p, new P(H +  (C(m) * w), H + (S(m) * w)));
-                    }else {
-                        e.push(new R(p, webCtr));
-                        u = e.length;
-                        if (u>1)D(u-2);
-                    }
+                    // draw line to the edge
+                    if (i%6 ==0) L(p, new P(H +  (C(m) * w), H + (S(m) * w)));
+                        
+                    e.push(new R(p, webCtr));
+                    u = e.length;
+                    if (u>1)D(u-2);
+                    
+                    // move ahead a random amount of degrees
+                    incrementer =  ~~(N() * 4 + 1);
                 
-                incrementer =  M.round(Rn() * 4 + 1);
-                
-                g = z.length;
-                if (i>0) L(p, z[g-2]);
+                    g = z.length;
+                    if (i>0) L(p, z[g-2]);
+                }
+                L(z[g-1], z[0]);
+                D(0);
+                D(u-1);
             }
-            L(z[g-1], z[0]);
-            D(0);
-            D(u-1);
-      }
 
 
 
         /*
         void mouseClicked() {
-          drawWeb();
+          w();
         }
         */
         
@@ -141,13 +138,11 @@
             // z = array of points (P)
             
             r = e[rayNum];
-            //ptSpc = ((ray.l-5) * .99) / barPtAmt;
         
             for (k=1; k<barPtAmt; k++) {
                 // randomly DON'T draw a line
-                if (Rn()*5 == 1) continue;
+                if (N()*5 == 1) continue;
                 
-                //s = (((r.l-5) * .99) / barPtAmt) * k;
                 s = (r.l/barPtAmt)*k;
                 // find the positions of all the pts that will go on the given ray
                 b = new P(H + C(r.a)*s, H + S(r.a)*s);
@@ -157,7 +152,7 @@
                
                 // Get a random distance to place the starting point at. it will be within a range above and 
                 // below the original point. The further away from the center, the more variation it can have
-                d = G(b, webCtr) + Rn()*(k * .2*2) - k * .2;
+                d = G(b, webCtr) + N()*(k * .2*2) - k * .2;
                 t = new P(H + C(r.a) * d, H + S(r.a) * d);
                 
                 d = (d > n.l) ? n.l : d;
