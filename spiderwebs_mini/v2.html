@@ -24,7 +24,7 @@
         
         
         function w(){
-            var M=Math, Rn=M.random, C=M.cos, S=M.sin, Sq=M.sqrt, Pw=M.pow, PI=M.PI, H=300, startPt = new P(H, 450), barPtAmt=Rn() * 10 + 15, webCtr=new P(H, H), w=600, num=1200, halfCirc = 180;
+            var M=Math, Rn=M.random, C=M.cos, S=M.sin, Sq=M.sqrt, Pw=M.pow, PI=M.PI, H=300, barPtAmt=Rn() * 10 + 15, webCtr=new P(H, H), w=600, num=1200, halfCirc = 180;
             // e = rays array
             // u = ray_length
             
@@ -75,25 +75,25 @@
             
             g = function(){
                 //var p, incrementer=1, s=Rn()*.1 + .2, i, j, myA, max=61, pts_length;
-                var incrementer=1, s=Rn()*.1 + .2, max=61;
+                var incrementer=1, s=Rn()*.1 + .2, max=61, f;
                 z = [];
                 e = [];
                
                 
-                var f = function (j,u,k) {
+                f = function (j,u,k) {
                         o = s * (-Pw(j, 2) + 40*j + num);
                         q = (PI*j)/halfCirc;
-                        p = new P(k*(startPt.x + o *S(q))+u, startPt.y - o *C(q));
+                        p = new P(k*(300 + o *S(q))+u, 450 - o *C(q));
                 }
                 for (i=0; i<119; i+=incrementer) {
                     //for (i=0; i<61; i+=4) {
                     j = i%max;
                     //w = -Pw(j, 2);
                     
-                    if (i >= 61) {
+                    if (i >= max) {
                         f(j,0,1);
                     }else {
-                        f(61-j,w,-1);
+                        f(max-j,w,-1);
                     }
                    
                    
@@ -103,7 +103,7 @@
                     
                     if (i%6 ==0) {
                         // draw line to the edge
-                        L(p, new P(webCtr.x +  (C(m) * w), webCtr.y + (S(m) * w)));
+                        L(p, new P(H +  (C(m) * w), H + (S(m) * w)));
                     }else {
                         e.push(new R(p, webCtr));
                         u = e.length;
@@ -150,7 +150,7 @@
                 //s = (((r.l-5) * .99) / barPtAmt) * k;
                 s = (r.l/barPtAmt)*k;
                 // find the positions of all the pts that will go on the given ray
-                b = new P(webCtr.x + C(r.a)*s, webCtr.y + S(r.a)*s);
+                b = new P(H + C(r.a)*s, H + S(r.a)*s);
              
                 // if not the last strand
                 n = (rayNum != 0) ? e[rayNum - 1] : e[u-1];
@@ -158,10 +158,10 @@
                 // Get a random distance to place the starting point at. it will be within a range above and 
                 // below the original point. The further away from the center, the more variation it can have
                 d = G(b, webCtr) + Rn()*(k * .2*2) - k * .2;
-                t = new P(webCtr.x + C(r.a) * d, webCtr.y + S(r.a) * d);
+                t = new P(H + C(r.a) * d, H + S(r.a) * d);
                 
                 d = (d > n.l) ? n.l : d;
-                L(t, new P(webCtr.x + C(n.a) * d, webCtr.y + S(n.a) * d));
+                L(t, new P(H + C(n.a) * d, H + S(n.a) * d));
             }
         }  
         g();
